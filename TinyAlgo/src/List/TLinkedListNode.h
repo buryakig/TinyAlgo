@@ -34,3 +34,14 @@ struct TDoublyLinkedListNode
 	TDoublyLinkedListNode* Prev;
 	NodeType Info;
 };
+
+template<class NodeType>
+struct TLinkedSkipListNode
+{
+	explicit TLinkedSkipListNode()
+	{}
+	
+
+	TLinkedSkipListNode** Next;
+	NodeType Info;
+};
