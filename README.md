@@ -1,2 +1,2 @@
 # TinyAlgo
-Tiny template algorithm collection
+Tiny collection of template algorithms
