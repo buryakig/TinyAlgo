@@ -1,5 +1,5 @@
 
-set(EXAMPLE_NAME examples)
+set(EXAMPLE_NAME Library)
 
 file(GLOB_RECURSE SRC_FILES LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.c??)
 file(GLOB_RECURSE HEADER_FILES LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} src/*.h)
@@ -9,7 +9,7 @@ SETUP_GROUPS("${HEADER_FILES}")
 
 add_executable(${EXAMPLE_NAME}  ${SRC_FILES} ${HEADER_FILES})
 
-target_include_directories(${EXAMPLE_NAME} PRIVATE src/examples/)
+target_include_directories(${EXAMPLE_NAME} PRIVATE src/)
 
 if(MSVC)
 	add_definitions(-D_CONSOLE)

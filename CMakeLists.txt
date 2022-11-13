@@ -15,8 +15,8 @@ include_directories(TinyAlgo/)
 add_subdirectory(tinyalgo ${CMAKE_CURRENT_BINARY_DIR}/TinyAlgo)
 
 if(NOT EXTERNAL)
-	add_subdirectory(examples ${CMAKE_CURRENT_BINARY_DIR}/examples)
-	target_link_libraries(examples PRIVATE TinyAlgo)
+	add_subdirectory(examples/Library ${CMAKE_CURRENT_BINARY_DIR}/examples/Library)
+	target_link_libraries(Library PRIVATE TinyAlgo)
 
-	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT examples)
+	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Library)
 endif()
