@@ -11,6 +11,7 @@ include(CMake/CMakeMacros.txt)
 
 include_directories(.)
 include_directories(TinyAlgo/)
+include_directories(TinyAlgo/src)
 
 add_subdirectory(tinyalgo ${CMAKE_CURRENT_BINARY_DIR}/TinyAlgo)
 

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include "List/TLinkedList.h"
 #include <list>
 #include <algorithm>
 
@@ -45,7 +46,7 @@ public:
 		return strcmp(name, ar.name) == 0;
 	}
 	char* name;
-	list<Book> books;
+	TLinkedList<Book> books;
 
 private:
 
@@ -68,20 +69,20 @@ public:
 	CheckedOutBook()
 	{}
 
-	CheckedOutBook(	list<Author>::iterator ar, list<Book>::iterator bk)
+	CheckedOutBook(	TLinkedListNode<Author> * ar, TLinkedListNode<Book> * bk)
 		: author{ar}
 		, book{bk}
 	{}
 
 	bool operator== (const CheckedOutBook& bk) const
 	{
-		return strcmp(author->name, bk.author->name) == 0 &&
-			strcmp(book->title, bk.book->title) == 0;
+		return strcmp(author->Info.name, bk.author->Info.name) == 0 &&
+			strcmp(book->Info.title, bk.book->Info.title) == 0;
 	}
 
 
-	list<Author>::iterator author;
-	list<Book>::iterator book;
+	TLinkedListNode<Author>* author;
+	TLinkedListNode<Book>* book;
 
 	friend void checkOutBook();
 	friend void returnBook();
@@ -99,7 +100,7 @@ public:
 		return strcmp(name, pn.name) == 0;
 	}
 	char* name;
-	list<CheckedOutBook> books;
+	TLinkedList<CheckedOutBook> books;
 
 private:
 	ostream& print(ostream& stream) const;
@@ -112,15 +113,15 @@ private:
 	friend Book;
 };
 
-list<Author> catalog['Z' + 1];
-list<Patron> people['Z' + 1];
+TLinkedList<Author> catalog['Z' + 1];
+TLinkedList<Patron> people['Z' + 1];
 
 ostream& Author::print(ostream& stream) const
 {
 	stream << name << endl;
-	list<Book>::const_iterator ref = books.begin();
-	for (; ref != books.end(); ++ref)
-		stream << *ref;
+	TLinkedListNode<Book> * ref = books.GetHead();
+	for (; ref != books.GetTail(); ref = ref->Next)
+		stream << ref->Info;
 
 	return stream;
 }
@@ -143,12 +144,12 @@ int getIndexFromLetter(const char ch)
 ostream& Patron::print(ostream& stream) const
 {
 	stream << name;
-	if(!books.empty())
+	if(!books.IsEmpty())
 	{
 		stream << " has the following books:\n";
-		list<CheckedOutBook>::const_iterator bk = books.begin();
-		for (; bk != books.end(); ++bk)
-			stream << "\t* " << bk->author->name << ", " << bk->book->title << endl;
+		TLinkedListNode<CheckedOutBook>* bk = books.GetHead();
+		for (; bk != nullptr; bk = bk->Next)
+			stream << "\t* " << bk->Info.author->Info.name << ", " << bk->Info.book->Info.title << endl;
 	}
 	else
 		stream << " has no books" << endl;
@@ -157,11 +158,11 @@ ostream& Patron::print(ostream& stream) const
 }
 
 template<class T>
-ostream& operator<< (ostream& out, const list<T>& lst)
+ostream& operator<< (ostream& out, const TLinkedList<T>& lst)
 {
-	for (typename list<T>::const_iterator ref = lst.begin(); ref != lst.end();
-	ref++)
-	out << *ref; // overloaded <<
+	for (TLinkedListNode<T> * ref = lst.GetHead(); ref != nullptr;
+	ref = ref->Next)
+	out << ref->Info; // overloaded <<
 	return out;
 }
 
@@ -179,14 +180,14 @@ char* getString(const char *msg)
 
 void status()
 {
-	register int i;
+	int i;
 	cout << "Library has the following books:\n\n";
 	for (i = getIndexFromLetter('A'); i <= getIndexFromLetter('Z'); ++i)
-		if (!catalog[i].empty())
+		if (!catalog[i].IsEmpty())
 			cout << catalog[i];
 	cout << "\nThe following people are using the library:\n\n";
 	for(i = getIndexFromLetter('A'); i <= getIndexFromLetter('Z'); ++i)
-		if (!people[i].empty())
+		if (!people[i].IsEmpty())
 			cout << people[i];
 }
 
@@ -196,16 +197,14 @@ void includeBook()
 	Book newBook;
 	newAuthor.name = getString("Enter author's name: ");
 	newBook.title = getString("Enter the title of the book: ");
-	list<Author>::iterator oldAuthor = find(catalog[getIndexFromLetter(newAuthor.name[0])].begin(),
-											catalog[getIndexFromLetter(newAuthor.name[0])].end(),
-											newAuthor);
-	if (oldAuthor == catalog[getIndexFromLetter(newAuthor.name[0])].end())
+	TLinkedListNode<Author>* oldAuthor = catalog[getIndexFromLetter(newAuthor.name[0])].FindInList(newAuthor);
+	if (!oldAuthor)
 	{
-		newAuthor.books.push_front(newBook);
-		catalog[getIndexFromLetter(newAuthor.name[0])].push_front(newAuthor);
+		newAuthor.books.AddToHead(newBook);
+		catalog[getIndexFromLetter(newAuthor.name[0])].AddToHead(newAuthor);
 	}
 	else
-		(*oldAuthor).books.push_front(newBook);
+		(*oldAuthor).Info.books.AddToHead(newBook);
 }
 
 void checkoutBook()
@@ -214,47 +213,41 @@ void checkoutBook()
 	Author author;
 	Book book;
 
-	list<Author>::iterator authorRef;
-	list<Book>::iterator bookRef;
+	TLinkedListNode<Author>* authorRef;
+	TLinkedListNode<Book>* bookRef;
 
 	patron.name = getString("Enter patron's name: ");
 
 	while (true)
 	{
 		author.name = getString("Enter author's name: ");
-		authorRef = find(catalog[getIndexFromLetter(author.name[0])].begin(),
-			catalog[getIndexFromLetter(author.name[0])].end(),
-			author);
-		if (authorRef == catalog[getIndexFromLetter(author.name[0])].end())
+		authorRef = catalog[getIndexFromLetter(author.name[0])].FindInList(author);
+		if (authorRef)
 			cout << "No such author\n";
 		else break;
 	}
 	while(true)
 	{
 		book.title = getString("Enter the title of the book: ");
-		bookRef = find(authorRef->books.begin(),
-						authorRef->books.end(),
-						book);
-		if (bookRef == authorRef->books.end())
+		bookRef = authorRef->Info.books.FindInList(book);
+		if (!bookRef)
 			cout << "Misspelled title\n";
 		else break;
 	}
-	list<Patron>::iterator patronRef;
-	patronRef = find(people[getIndexFromLetter(patron.name[0])].begin(),
-					people[getIndexFromLetter(patron.name[0])].end(),
-					patron);
+	TLinkedListNode<Patron> * patronRef;
+	patronRef = people[getIndexFromLetter(patron.name[0])].FindInList(patron);
 	CheckedOutBook checkedOutBook(authorRef, bookRef);
 
-	if(patronRef == people[getIndexFromLetter(patron.name[0])].end())
+	if(!patronRef)
 	{
-		patron.books.push_front(checkedOutBook);
-		people[getIndexFromLetter(patron.name[0])].push_front(patron);
-		bookRef->patron = &*people[getIndexFromLetter(patron.name[0])].begin();
+		patron.books.AddToHead(checkedOutBook);
+		people[getIndexFromLetter(patron.name[0])].AddToHead(patron);
+		bookRef->Info.patron = &people[getIndexFromLetter(patron.name[0])].GetHead()->Info;
 	}
 	else
 	{
-		patronRef->books.push_front(checkedOutBook);
-		bookRef->patron = &*patronRef;
+		patronRef->Info.books.AddToHead(checkedOutBook);
+		bookRef->Info.patron = &patronRef->Info;
 	}
 }
 
@@ -264,17 +257,15 @@ void returnBook()
 	Book book;
 	Author author;
 
-	list<Patron>::iterator patronRef;
-	list<Book>::iterator bookRef;
-	list<Author>::iterator authorRef;
+	TLinkedListNode<Patron> * patronRef;
+	TLinkedListNode<Book>* bookRef;
+	TLinkedListNode<Author>* authorRef;
 
 	while(true)
 	{
 		patron.name = getString("Enter patron's name: ");
-		patronRef = find(	people[getIndexFromLetter(patron.name[0])].begin(),
-							people[getIndexFromLetter(patron.name[0])].end(),
-				patron);
-		if (patronRef == people[getIndexFromLetter(patron.name[0])].end())
+		patronRef = people[getIndexFromLetter(patron.name[0])].FindInList(patron);
+		if (!patronRef)
 			cout << "No such patron\n";
 		else
 			break;
@@ -282,25 +273,22 @@ void returnBook()
 	while(true)
 	{
 		author.name = getString("Enter author's name: ");
-		authorRef = find(catalog[getIndexFromLetter(author.name[0])].begin(),
-						catalog[getIndexFromLetter(author.name[0])].end(),
-				author);
-		if (authorRef == catalog[getIndexFromLetter(author.name[0])].end())
+		authorRef = catalog[getIndexFromLetter(author.name[0])].FindInList(author);
+		if (!authorRef)
 			cout << "No such author\n";
 		else break;
 	}
 	while(true)
 	{
 		book.title = getString("Enter the title of the book: ");
-		bookRef = find((*authorRef).books.begin(),
-			(*authorRef).books.end(), book);
-		if (bookRef == (*authorRef).books.end())
+		bookRef = authorRef->Info.books.FindInList( book);
+		if (!bookRef)
 			cout << "Misspelled title\n";
 		else break;
 	}
 	CheckedOutBook checkedOutBook(authorRef, bookRef);
-	bookRef->patron = nullptr;
-	patronRef->books.remove(checkedOutBook);
+	bookRef->Info.patron = nullptr;
+	patronRef->Info.books.DeleteNode(checkedOutBook);
 }
 
 int menu()

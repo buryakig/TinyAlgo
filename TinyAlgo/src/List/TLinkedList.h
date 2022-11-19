@@ -12,13 +12,17 @@ public:
 
 	~TLinkedList();
 
-	inline bool IsEmpty();
+	inline bool IsEmpty() const;
 	inline void AddToHead(NodeType el);
 	inline void AddToTail(NodeType el);
 	inline NodeType DeleteFromHead();
 	inline NodeType DeleteFromTail();
 	inline void DeleteNode(NodeType el);
+	inline TLinkedListNode<NodeType>* FindInList(NodeType el) const;
 	inline bool IsInList(NodeType el) const;
+
+	inline TLinkedListNode<NodeType>* GetHead() const { return Head; }
+	inline TLinkedListNode<NodeType>* GetTail() const { return Tail; }
 
 private:
 	TLinkedListNode<NodeType>* Head, * Tail;
@@ -36,7 +40,7 @@ inline TLinkedList<NodeType>::~TLinkedList()
 }
 
 template <class NodeType>
-bool TLinkedList<NodeType>::IsEmpty()
+inline bool TLinkedList<NodeType>::IsEmpty()  const
 {
 	return Head == nullptr;
 }
@@ -128,9 +132,18 @@ inline void TLinkedList<NodeType>::DeleteNode(NodeType el)
 }
 
 template <class NodeType>
+inline TLinkedListNode<NodeType> * TLinkedList<NodeType>::FindInList(NodeType el) const
+{
+	TLinkedListNode<NodeType>* tmp;
+	for (tmp = Head; tmp != nullptr && tmp->Info == el; tmp = tmp->Next);
+	return tmp;
+}
+
+template <class NodeType>
 inline bool TLinkedList<NodeType>::IsInList(NodeType el) const
 {
 	TLinkedListNode<NodeType>* tmp;
-	for (tmp = Head; tmp != nullptr && tmp->Infor == el; tmp = tmp->Next);
+	for (tmp = Head; tmp != nullptr && tmp->Info == el; tmp = tmp->Next);
 	return tmp != nullptr;
 }
+

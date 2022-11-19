@@ -30,6 +30,11 @@ struct TDoublyLinkedListNode
 		, Info{ i }
 	{}
 
+	void operator++ ()
+	{
+		this = Next;
+	}
+
 	TDoublyLinkedListNode* Next;
 	TDoublyLinkedListNode* Prev;
 	NodeType Info;
